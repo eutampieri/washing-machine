@@ -33,7 +33,7 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: /tools/on_off_detection
+          context: tools/on_off_detection
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ghcr.io/${{ github.repository }}/fetch:latest
