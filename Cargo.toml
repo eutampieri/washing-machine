@@ -1,2 +1,2 @@
 [workspace]
-members = ["tools/on_off_detection"]
+members = ["tools/on_off_detection", "tools/labeler/src-tauri"]
