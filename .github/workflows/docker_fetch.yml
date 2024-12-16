@@ -35,5 +35,5 @@ jobs:
         with:
           context: "{{defaultContext}}:tools/on_off_detection"
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           tags: ghcr.io/${{ github.repository }}/fetch:latest
