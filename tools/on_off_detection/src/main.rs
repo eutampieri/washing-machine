@@ -83,8 +83,8 @@ fn upload(image: &[u8], status: bool) {
 
 fn job() -> bool {
     let frame = fetch_image();
-    let status = is_on(&image);
-    upload(&image, status);
+    let status = is_on(&frame);
+    upload(&frame, status);
     status
 }
 
