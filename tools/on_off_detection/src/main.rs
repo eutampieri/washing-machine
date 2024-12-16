@@ -92,6 +92,6 @@ fn main() {
     let status = job();
     if status {
         std::thread::sleep(std::time::Duration::from_secs(30));
-        job()
+        job();
     }
 }
