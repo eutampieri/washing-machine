@@ -51,7 +51,7 @@ fn fetch_image() -> Vec<u8> {
     f
 }
 
-fn upload(image: &[u8], status: bool) {
+fn upload(frame: &[u8], status: bool) {
     let timestamp = std::time::SystemTime::now()
         .duration_since(std::time::SystemTime::UNIX_EPOCH)
         .unwrap()
@@ -59,7 +59,6 @@ fn upload(image: &[u8], status: bool) {
 
     let filename = format!("{}.jpg", timestamp);
     std::fs::write(&filename, &frame).unwrap();
-    let image = cv2::core::Mat::from_slice(&frame).unwrap();
 
     let base_path = std::env::var("BASE_RCLONE_PATH").unwrap();
 
@@ -83,7 +82,8 @@ fn upload(image: &[u8], status: bool) {
 
 fn job() -> bool {
     let frame = fetch_image();
-    let status = is_on(frame.as_slice());
+    let image = cv2::core::Mat::from_slice(&frame).unwrap();
+    let status = is_on(image);
     upload(&frame, status);
     status
 }
