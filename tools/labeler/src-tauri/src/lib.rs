@@ -10,8 +10,8 @@ enum CyclePhase {
     FaseAntipiegaFine,
 }
 
-impl From<CyclePhase> for char {
-    fn from(value: CyclePhase) -> Self {
+impl From<&CyclePhase> for char {
+    fn from(value: &CyclePhase) -> Self {
         match value {
             CyclePhase::AmmolloPrelavaggio => 'A',
             CyclePhase::Lavaggio => 'L',
@@ -53,6 +53,22 @@ impl Label {
     }
 }
 
+impl ToString for Label {
+    fn to_string(&self) -> String {
+        if self.is_fully_labeled() {
+            format!(
+                "{}{}{}.{}",
+                self.timestamp,
+                char::from(self.status.as_ref().unwrap()),
+                self.minutes_left.unwrap(),
+                self.extension
+            )
+        } else {
+            format!("{}.{}", self.timestamp, self.extension)
+        }
+    }
+}
+
 impl FromStr for Label {
     type Err = &'static str;
 
@@ -81,12 +97,6 @@ impl FromStr for Label {
     }
 }
 
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
 #[tauri::command]
 fn get_pictures(base_path: &str) -> Vec<String> {
     std::fs::read_dir(base_path)
@@ -94,18 +104,44 @@ fn get_pictures(base_path: &str) -> Vec<String> {
             x.into_iter()
                 .filter_map(|y| y.ok())
                 .flat_map(|y| y.path().to_str().map(|z| z.to_string()))
-                .filter(|x| !is_labeled(dbg!(&x)))
+                .filter(|x| !is_labeled(&x))
                 .collect()
         })
         .unwrap_or_default()
+}
+#[tauri::command]
+fn label(file: &str, phase: char, minutes: u16) {
+    let src_path = std::path::Path::new(file);
+    let filename = src_path.file_name().unwrap().to_str().unwrap();
+    let mut label: Label = filename.parse().unwrap();
+    label.minutes_left = Some(minutes);
+    label.status = CyclePhase::try_from(phase).ok();
+    let new_filename = label.to_string();
+    let dst_path = src_path.parent().unwrap().join(new_filename);
+    std::fs::rename(src_path, dst_path).unwrap();
+}
+
+#[tauri::command]
+fn get_phases() -> Vec<(String, char)> {
+    [
+        CyclePhase::AmmolloPrelavaggio,
+        CyclePhase::Lavaggio,
+        CyclePhase::Risciacquo,
+        CyclePhase::StopConAcqua,
+        CyclePhase::ScaricoCentrifuga,
+        CyclePhase::FaseAntipiegaFine,
+    ]
+    .into_iter()
+    .map(|x| (format!("{:?}", x), (&x).into()))
+    .collect()
 }
 
 fn is_labeled(filename: &str) -> bool {
     std::path::Path::new(filename)
         .file_name()
         .and_then(|x| x.to_str())
-        .and_then(|x| dbg!(x.parse::<Label>()).ok())
-        .map(|x| dbg!(x.is_fully_labeled()))
+        .and_then(|x| x.parse::<Label>().ok())
+        .map(|x| x.is_fully_labeled())
         .unwrap_or_default()
 }
 
@@ -114,7 +150,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![greet, get_pictures])
+        .invoke_handler(tauri::generate_handler![get_phases, get_pictures, label])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
