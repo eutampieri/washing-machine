@@ -83,7 +83,7 @@ fn upload(image: &[u8], status: bool) {
 
 fn job() -> bool {
     let frame = fetch_image();
-    let status = is_on(&frame);
+    let status = is_on(frame.as_slice());
     upload(&frame, status);
     status
 }
