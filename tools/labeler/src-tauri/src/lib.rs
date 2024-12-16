@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+#[derive(Debug)]
 enum CyclePhase {
     AmmolloPrelavaggio,
     Lavaggio,
@@ -37,6 +38,8 @@ impl TryFrom<char> for CyclePhase {
         }
     }
 }
+
+#[derive(Debug)]
 struct Label {
     timestamp: u64,
     status: Option<CyclePhase>,
@@ -61,10 +64,14 @@ impl FromStr for Label {
         let status = file
             .chars()
             .nth(10)
-            .ok_or("String too short")?
-            .try_into()
+            .ok_or("String too short")
+            .and_then(|x| x.try_into().map_err(|_| "Parsing failed"))
             .ok();
-        let minutes_left = file[11..].parse().ok();
+        let minutes_left = if let Some(part) = file.get(11..) {
+            part.parse().ok()
+        } else {
+            None
+        };
         Ok(Self {
             timestamp,
             status,
@@ -87,24 +94,27 @@ fn get_pictures(base_path: &str) -> Vec<String> {
             x.into_iter()
                 .filter_map(|y| y.ok())
                 .flat_map(|y| y.path().to_str().map(|z| z.to_string()))
+                .filter(|x| !is_labeled(dbg!(&x)))
                 .collect()
         })
         .unwrap_or_default()
 }
 
-#[tauri::command]
 fn is_labeled(filename: &str) -> bool {
-    filename
-        .parse::<Label>()
-        .map(|x| x.is_fully_labeled())
+    std::path::Path::new(filename)
+        .file_name()
+        .and_then(|x| x.to_str())
+        .and_then(|x| dbg!(x.parse::<Label>()).ok())
+        .map(|x| dbg!(x.is_fully_labeled()))
         .unwrap_or_default()
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![greet, get_pictures, is_labeled])
+        .invoke_handler(tauri::generate_handler![greet, get_pictures])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
