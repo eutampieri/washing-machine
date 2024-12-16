@@ -40,17 +40,18 @@ fn is_on<M: cv2::core::ToInputArray>(image: M) -> bool {
     dbg!(avg) >= 0.85
 }
 
-fn main() {
-    let frame = {
-        let mut f = vec![];
-        ureq::get(&std::env::var("FRAME_URL").unwrap())
-            .call()
-            .unwrap()
-            .into_reader()
-            .read_to_end(&mut f)
-            .unwrap();
-        f
-    };
+fn fetch_image() -> Vec<u8> {
+    let mut f = vec![];
+    ureq::get(&std::env::var("FRAME_URL").unwrap())
+        .call()
+        .unwrap()
+        .into_reader()
+        .read_to_end(&mut f)
+        .unwrap();
+    f
+}
+
+fn upload(image: &[u8], status: bool) {
     let timestamp = std::time::SystemTime::now()
         .duration_since(std::time::SystemTime::UNIX_EPOCH)
         .unwrap()
@@ -62,7 +63,7 @@ fn main() {
 
     let base_path = std::env::var("BASE_RCLONE_PATH").unwrap();
 
-    let dst_path = if is_on(&image) {
+    let dst_path = if status {
         "/labeled/on"
     } else {
         "/labeled/off"
@@ -78,4 +79,19 @@ fn main() {
     std::io::Write::write_all(&mut std::io::stdout(), &output.stdout).unwrap();
     std::io::Write::write_all(&mut std::io::stderr(), &output.stderr).unwrap();
     std::fs::remove_file(filename).unwrap();
+}
+
+fn job() -> bool {
+    let frame = fetch_image();
+    let status = is_on(&image);
+    upload(&image, status);
+    status
+}
+
+fn main() {
+    let status = job();
+    if status {
+        std::thread::sleep(std::time::Duration::from_secs(30));
+        job()
+    }
 }
