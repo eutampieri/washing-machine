@@ -1,0 +1,8 @@
+[package]
+name = "digit_extraction"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+opencv = "0.93.5"
+labels = {path = "../labels"}
