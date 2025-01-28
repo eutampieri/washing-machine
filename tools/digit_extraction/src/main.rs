@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use opencv as cv2;
 use opencv::core::MatTraitConst;
 
@@ -6,13 +7,31 @@ const FIRST_DIGIT_REGION: cv2::core::Rect = cv2::core::Rect::new(0, 0, 20, 53);
 const SECOND_DIGIT_REGION: cv2::core::Rect = cv2::core::Rect::new(20, 0, 11, 53);
 const THIRD_DIGIT_REGION: cv2::core::Rect = cv2::core::Rect::new(31, 0, 15, 53);
 
-fn get_digits(n: u8) -> (u8, u8, u8) {
+enum DisplayDigit {
+    Blank,
+    Digit(u8),
+}
+
+impl Display for DisplayDigit {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DisplayDigit::Blank => 10,
+            DisplayDigit::Digit(x) => *x,
+        }.fmt(f)
+    }
+}
+
+fn get_digits(n: u8) -> (DisplayDigit, DisplayDigit, DisplayDigit) {
     let minutes = n % 60;
     let third = minutes % 10;
     let second = (minutes / 10) % 10;
     let first = n / 60;
-    (first, second, third)
+    let hour = if first > 0 { DisplayDigit::Digit(first)} else {DisplayDigit::Blank};
+    let second = if first > 0 || second > 0 { DisplayDigit::Digit(second)} else {DisplayDigit::Blank};
+    let third = DisplayDigit::Digit(third);
+    (hour, second, third)
 }
+
 
 fn main() {
     let directory = std::env::args().nth(1).expect("Run with path!");
