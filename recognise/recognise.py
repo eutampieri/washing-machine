@@ -111,7 +111,7 @@ acc_s = 0
 acc_m = 0
 acc_on_off = 0
 count=0
-for i in dataset[:1000]:
+for i in dataset:
   count += 1
   l_on_off, l_status, l_minutes = extract_label(i)
   image = cv2.imread(i, cv2.IMREAD_GRAYSCALE)
