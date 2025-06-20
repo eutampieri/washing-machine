@@ -53,8 +53,7 @@ visione artificiale.
 
 \par Per quanto riguarda invece il sottoproblema di riconoscimento della
 fase, le tecniche tradizionali risultano essere in molti casi le
-tecniche più semplici ed efficaci anche su problemi più complessi,
-che quindi a loro volta utilizzano tecniche più complesse\citep{o2020deep}.
+tecniche più semplici ed efficaci anche su problemi più complessi, eventualmente combinandole con tecniche di machine learning\citep{o2020deep}.
 
 \section{Approccio sviluppato}\label{approccio-sviluppato}
 
@@ -79,8 +78,8 @@ Interesse}\label{individuazione-delle-regioni-di-interesse}
 
 \begin{figure}[h!]
   \centering
-  \includegraphics[scale=2]{display_template}
-  \includegraphics[scale=0.5]{template_bar}
+  \includegraphics[scale=3]{display_template}
+  \includegraphics[scale=0.65]{template_bar}
   \caption{I template utilizzati per l'individuazione delle regioni.}
 \end{figure}
 
@@ -133,8 +132,8 @@ riconoscimento dei minuti rimanenti abbiamo calcolato l'errore commesso
 rispetto al valore contenuto nella label.
 
 \par Abbiamo calcolato la media delle tre accuratezze ottenendo
-un'accuratezza complessiva del sistema pari al 94,5\% (98,6
-\% sul riconoscimento della fase, 92,8\% sui minuti rimanenti e 92,0\% su acceso/spento)
+un'accuratezza complessiva del sistema pari al 92,3\% (97,5
+\% sul riconoscimento della fase, 87,5\% sui minuti rimanenti e 92,0\% su acceso/spento).  Nel riconoscimento del tempo rimanente al completamento del lavaggio abbiamo ottenuto un errore medio di 5,39 mminuti.
 
 \par Durante le nostre analisi, abbiamo notato che la rete ha avuto
 difficoltà a classificare correttamente l'ultima cifra del display. In
