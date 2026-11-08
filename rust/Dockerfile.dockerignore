@@ -1,0 +1,6 @@
+# Used by BuildKit/Buildah for builds with -f rust/Dockerfile (context: repo root).
+*
+!recognise/display_template.png
+!recognise/template_bar.jpg
+!rust/
+rust/target/
